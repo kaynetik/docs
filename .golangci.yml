@@ -1,0 +1,98 @@
+linters-settings:
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+  goimports:
+    local-prefixes: github.com/golangci/golangci-lint
+  golint:
+    min-confidence: 0
+  govet:
+    check-shadowing: true
+  maligned:
+    suggest-new: true
+  misspell:
+    locale: US
+  nakedret:
+    max-func-lines: 2
+  gofumpt:
+    extra-rules: true
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - goimports
+    - golint
+    - gomnd
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
+    - lll
+    - maligned
+    - misspell
+    - nakedret
+    - nestif
+    - prealloc
+    - rowserrcheck
+    #    - scopelint // Interfering with tests atm.
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+    - wsl
+    - asciicheck
+    #    - godox //TODO: Temporarily disabled - return before doing first release.
+    - nolintlint
+    #    - goerr113 there are issues with this one. TBD if gonna be used.
+    - exhaustive
+    - exportloopref
+    - gofumpt
+    - goheader
+    - noctx
+    - sqlclosecheck
+    - errorlint
+    - paralleltest
+    - tparallel
+    - wrapcheck
+    - forbidigo
+    - makezero
+    - predeclared
+    - thelper
+
+issues:
+  exclude-rules:
+    - path: examples/*
+      linters:
+        - gomnd
+        - exhaustivestruct
+        - gochecknoglobals
+    - path: _test\.go
+      linters:
+        - exhaustivestruct

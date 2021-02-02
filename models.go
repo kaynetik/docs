@@ -1,5 +1,29 @@
 package docs
 
+func New() OAS {
+	initRoutes := RegRoutes{}
+
+	return OAS{
+		RegisteredRoutes: initRoutes,
+	}
+}
+
+const (
+	OASAnnotationInit = "// @OAS "
+)
+
+// OAS - represents Open API Specification structure, in its approximated Go form.
+type OAS struct {
+	OASVersion       OASVersion   `yaml:"openapi"`
+	Info             Info         `yaml:"info"`
+	ExternalDocs     ExternalDocs `yaml:"externalDocs"`
+	Servers          Servers      `yaml:"servers"`
+	Tags             Tags         `yaml:"tags"`
+	Paths            Paths        `yaml:"paths"`
+	Components       Components   `yaml:"components"`
+	RegisteredRoutes RegRoutes    `yaml:"-"`
+}
+
 // Version is represented in SemVer format.
 type (
 	Version    string
@@ -47,7 +71,6 @@ type Tag struct {
 type Paths []Path
 
 type Path struct {
-	handlerFuncName string           `yaml:"-"`
 	Route           string           `yaml:"route"`
 	HTTPMethod      string           `yaml:"httpMethod"`
 	Tags            []string         `yaml:"tags"`
@@ -56,6 +79,7 @@ type Path struct {
 	RequestBody     RequestBody      `yaml:"requestBody"`
 	Responses       Responses        `yaml:"responses"`
 	Security        SecurityEntities `yaml:"security,omitempty"`
+	HandlerFuncName string           `yaml:"-"`
 }
 
 type RequestBody struct {

@@ -1,34 +1,25 @@
 package main
 
-import (
-	docs "github.com/go-oas/docs"
-)
+import "github.com/go-oas/docs"
 
 func main() {
 	apiDoc := docs.New()
 
-	apiDoc.OASVersion = "3.0.1"
+	apiDoc.SetOASVersion("3.0.1")
 
-	apiDoc.Info = docs.Info{
-		Title:          "Build OAS3.0.1",
-		Description:    "Description - Builder Testing for OAS3.0.1",
-		TermsOfService: "ToS LoremIpsum",
-		Contact: docs.Contact{
-			Email: "nesovic@protonmail.com",
-		},
-		License: docs.License{
-			Name: "MIT",
-			URL:  "https://github.com/go-oas/docs/blob/main/LICENSE",
-		},
-		Version: "0.0.1",
-	}
+	info := apiDoc.GetInfo()
+	info.Title = "Build OAS3.0.1"
+	info.Description = "Description - Builder Testing for OAS3.0.1"
+	info.TermsOfService = "ToS LoremIpsum"
+	info.SetContact("aleksandar.nesovic@protonmail.com")
+	info.SetLicense("MIT", "https://github.com/go-oas/docs/blob/main/LICENSE")
+	info.Version = "0.0.1"
 
 	apiDoc.Tags = docs.Tags{
 		docs.Tag{
 			Name:        "user",
 			Description: "Operations about the User",
-		},
-		docs.Tag{
+		}, docs.Tag{
 			Name:        "pet",
 			Description: "Pet Store example",
 			ExternalDocs: docs.ExternalDocs{
@@ -84,8 +75,7 @@ func main() {
 	}
 
 	apiDoc.AttachRoutes([]interface{}{
-		handleCreateUserRoute,
-		handleGetUserRoute,
+		dummyRouteFn,
 	})
 
 	err := apiDoc.MapAnnotationsInPath("./examples/users_example")
@@ -106,3 +96,5 @@ func main() {
 		panic(err)
 	}
 }
+
+func dummyRouteFn() {}
