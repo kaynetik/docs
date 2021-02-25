@@ -22,3 +22,27 @@ func (i *Info) SetLicense(licType, url string) {
 		URL:  URL(url),
 	}
 }
+
+// SetTag is used to define a new tag based on input params, and append it to the slice of tags its being called from.
+func (tt *Tags) SetTag(name, tagDescription string, extDocs ExternalDocs) {
+	var tag Tag
+
+	if !isStrEmpty(name) {
+		tag.Name = name
+	}
+
+	if !isStrEmpty(tagDescription) {
+		tag.Description = tagDescription
+	}
+
+	if !extDocs.isEmpty() {
+		tag.ExternalDocs = extDocs
+	}
+
+	tt.AppendTag(&tag)
+}
+
+// AppendTag is used to append an Tag to the slice of Tags its being called from.
+func (tt *Tags) AppendTag(tag *Tag) {
+	*tt = append(*tt, *tag)
+}

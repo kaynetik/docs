@@ -105,7 +105,7 @@ func walkFilepath(pathToTraverse string, walker walkerFn) ([]string, error) {
 
 func (o *OAS) mapDocAnnotations(path string) error {
 	if o == nil {
-		return errors.New("pointer to OASHandlers can not be nil") // fixme: migrate to validator!
+		return errors.New("pointer to OASHandlers can not be nil")
 	}
 
 	f, err := os.Open(path)
@@ -132,7 +132,7 @@ func (o *OAS) mapDocAnnotations(path string) error {
 }
 
 func mapIfLineContainsOASTag(lineText string, o *OAS) {
-	if strings.Contains(lineText, OASAnnotationInit) {
+	if strings.Contains(lineText, oasAnnotationInit) {
 		annotations := oasAnnotations(strings.Fields(lineText))
 
 		var newRoute Path
@@ -143,10 +143,6 @@ func mapIfLineContainsOASTag(lineText string, o *OAS) {
 		o.Paths = append(o.Paths, newRoute)
 	}
 }
-
-// Begin of oasAnnotations section.
-// This section is used mostly to abstract upon the []string,
-// so that future implementations are less susceptible to breaking changes.
 
 type oasAnnotations []string
 
@@ -161,5 +157,3 @@ func (oa oasAnnotations) getRoute() string {
 func (oa oasAnnotations) getHTTPMethod() string {
 	return oa[4]
 }
-
-// End of oasAnnotations section.
