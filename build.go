@@ -35,10 +35,10 @@ func getPathFromFirstElement(cbs []ConfigBuilder) string {
 // BuildDocs marshals the OAS struct to YAML and saves it to the chosen output file.
 //
 // Returns an error if there is any.
-func (o *OAS) BuildDocs(conf ...ConfigBuilder) error {
-	o.initCallStackForRoutes()
+func (oas *OAS) BuildDocs(conf ...ConfigBuilder) error {
+	oas.initCallStackForRoutes()
 
-	yml, err := marshalToYAML(o)
+	yml, err := oas.marshalToYAML()
 	if err != nil {
 		return fmt.Errorf("marshaling issue occurred: %w", err)
 	}
@@ -51,7 +51,24 @@ func (o *OAS) BuildDocs(conf ...ConfigBuilder) error {
 	return nil
 }
 
-func marshalToYAML(oas *OAS) ([]byte, error) {
+// BuildStream marshals the OAS struct to YAML and writes it to a stream.
+//
+// Returns an error if there is any.
+func (oas *OAS) BuildStream(w io.Writer) error {
+	yml, err := oas.marshalToYAML()
+	if err != nil {
+		return fmt.Errorf("marshaling issue occurred: %w", err)
+	}
+
+	err = writeAndFlush(yml, w)
+	if err != nil {
+		return fmt.Errorf("writing issue occurred: %w", err)
+	}
+
+	return nil
+}
+
+func (oas *OAS) marshalToYAML() ([]byte, error) {
 	transformedOAS := oas.transformToHybridOAS()
 
 	yml, err := yaml.Marshal(transformedOAS)
@@ -111,17 +128,17 @@ type hybridOAS struct {
 	Components   componentsMap `yaml:"components"`
 }
 
-func (o *OAS) transformToHybridOAS() hybridOAS {
+func (oas *OAS) transformToHybridOAS() hybridOAS {
 	ho := hybridOAS{}
 
-	ho.OpenAPI = o.OASVersion
-	ho.Info = o.Info
-	ho.ExternalDocs = o.ExternalDocs
-	ho.Servers = o.Servers
-	ho.Tags = o.Tags
+	ho.OpenAPI = oas.OASVersion
+	ho.Info = oas.Info
+	ho.ExternalDocs = oas.ExternalDocs
+	ho.Servers = oas.Servers
+	ho.Tags = oas.Tags
 
-	ho.Paths = makeAllPathsMap(&o.Paths)
-	ho.Components = makeComponentsMap(&o.Components)
+	ho.Paths = makeAllPathsMap(&oas.Paths)
+	ho.Components = makeComponentsMap(&oas.Components)
 
 	return ho
 }
@@ -137,9 +154,11 @@ func makeAllPathsMap(paths *Paths) pathsMap {
 		pathMap[keyTags] = path.Tags
 		pathMap[keySummary] = path.Summary
 		pathMap[keyOperationID] = path.OperationID
+		pathMap[keyDescription] = path.Description
 		pathMap[keySecurity] = makeSecurityMap(&path.Security)
 		pathMap[keyRequestBody] = makeRequestBodyMap(&path.RequestBody)
 		pathMap[keyResponses] = makeResponsesMap(&path.Responses)
+		pathMap[keyParameters] = makeParametersMap(path.Parameters)
 
 		allPaths[path.Route][strings.ToLower(path.HTTPMethod)] = pathMap
 	}
@@ -156,15 +175,15 @@ func makeRequestBodyMap(reqBody *RequestBody) map[string]interface{} {
 	return reqBodyMap
 }
 
-func makeResponsesMap(responses *Responses) map[uint]interface{} {
-	responsesMap := make(map[uint]interface{}, len(*responses))
+func makeResponsesMap(responses *Responses) map[string]interface{} {
+	responsesMap := make(map[string]interface{}, len(*responses))
 
 	for _, resp := range *responses {
 		codeBodyMap := make(map[string]interface{})
 		codeBodyMap[keyDescription] = resp.Description
 		codeBodyMap[keyContent] = makeContentSchemaMap(resp.Content)
 
-		responsesMap[resp.Code] = codeBodyMap
+		responsesMap[fmt.Sprintf("%d", resp.Code)] = codeBodyMap
 	}
 
 	return responsesMap
@@ -247,15 +266,18 @@ func makeComponentSchemasMap(schemas *Schemas) map[string]interface{} {
 
 	for _, s := range *schemas {
 		scheme := make(map[string]interface{})
-		scheme[keyType] = s.Type
-		scheme[keyProperties] = makePropertiesMap(&s.Properties)
-		scheme[keyRef] = s.Ref
 
-		if s.XML.Name != "" {
-			scheme[keyXML] = s.XML
+		if s.Ref != "" {
+			scheme[keyRef] = s.Ref
+		} else {
+			scheme[keyType] = s.Type
+			schemesMap[s.Name] = scheme
+			scheme[keyProperties] = makePropertiesMap(&s.Properties)
+
+			if s.XML.Name != "" {
+				scheme[keyXML] = s.XML
+			}
 		}
-
-		schemesMap[s.Name] = scheme
 	}
 
 	return schemesMap
@@ -324,4 +346,44 @@ const emptyStr = ""
 
 func isStrEmpty(s string) bool {
 	return s == emptyStr
+}
+
+func makeParametersMap(parameters Parameters) []map[string]interface{} {
+	parametersMap := []map[string]interface{}{}
+
+	for i := 0; i < len(parameters); i++ {
+		var (
+			param    = &parameters[i]
+			paramMap = make(map[string]interface{})
+		)
+
+		paramMap[keyName] = param.Name
+		paramMap[keyIn] = param.In
+		paramMap[keyDescription] = param.Description
+		paramMap[keyRequired] = param.Required
+		paramMap[keySchema] = makeSchemaMap(&param.Schema)
+
+		parametersMap = append(parametersMap, paramMap)
+	}
+
+	return parametersMap
+}
+
+func makeSchemaMap(schema *Schema) map[string]interface{} {
+	schemaMap := make(map[string]interface{})
+
+	if !isStrEmpty(schema.Ref) {
+		schemaMap[keyRef] = schema.Ref
+	} else {
+		schemaMap[keyName] = schema.Name
+		schemaMap[keyType] = schema.Type
+		if len(schema.Properties) > 0 {
+			schemaMap[keyProperties] = makePropertiesMap(&schema.Properties)
+		}
+		if schema.XML.Name != "" {
+			schemaMap[keyXML] = map[string]interface{}{"name": schema.XML.Name}
+		}
+	}
+
+	return schemaMap
 }

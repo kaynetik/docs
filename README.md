@@ -13,10 +13,16 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-oas/docs.svg)](https://pkg.go.dev/github.com/go-oas/docs)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://awesome-go.com)
 
-
 go-OAS Docs converts structured OAS3 (Swagger3) objects into the Open API Specification & automatically serves it on
 chosen route and port. It's extremely flexible and simple, so basically it can be integrated into any framework or
 existing project.
+
+We invite anyone interested to join our **[GH Discussions board](https://github.com/go-oas/docs/discussions)**. Honest
+feedback will enable us to build better product and at the same time not waste valuable time and effort on something
+that might not fit intended usage. So if you can, please spare few minutes to give your opinion of what should be done
+next, or what should be the priority for our roadmap. :muscle: :tada:
+
+----
 
 ## Table of Contents
 
@@ -113,7 +119,9 @@ other parts of the system for that matter.
 To run examples, and checkout hosted documentation via Swagger UI, issue the following command:
 
 ```sh
-$ go run ./examples/*.go
+$ go run ./examples/file_output/*.go
+# or uncomment line 40 and comment line 38 in internal/dist/index.html before running:
+$ go run ./examples/stream_output/*.go
 ```
 
 And navigate to `http://localhost:3005/docs/api/` in case that you didn't change anything before running the example
@@ -123,7 +131,8 @@ above.
 
 ## Contact
 
-Check out the current [Project board](https://github.com/go-oas/docs/projects/1) for more information.
+Check out the current [Project board](https://github.com/go-oas/docs/projects/1) or
+our **[GH Discussions board](https://github.com/go-oas/docs/discussions)** for more information.
 
 You can join our Telegram group at: [https://t.me/go_oas](https://t.me/go_oas)
 
